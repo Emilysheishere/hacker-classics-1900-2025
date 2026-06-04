@@ -1,0 +1,163 @@
+{
+  "source": "Algolia HN Search API",
+  "total": 24537,
+  "pageSize": 1000,
+  "totalPages": 25,
+  "startYear": 1900,
+  "endYear": 2025,
+  "minPoints": 4,
+  "generatedAt": "2026-06-04T07:11:40.974370+00:00",
+  "chunks": [
+    {
+      "file": "01.json",
+      "count": 1000,
+      "yearStart": 1900,
+      "yearEnd": 1960
+    },
+    {
+      "file": "02.json",
+      "count": 1000,
+      "yearStart": 1960,
+      "yearEnd": 1976
+    },
+    {
+      "file": "03.json",
+      "count": 1000,
+      "yearStart": 1977,
+      "yearEnd": 1985
+    },
+    {
+      "file": "04.json",
+      "count": 1000,
+      "yearStart": 1985,
+      "yearEnd": 1991
+    },
+    {
+      "file": "05.json",
+      "count": 1000,
+      "yearStart": 1991,
+      "yearEnd": 1995
+    },
+    {
+      "file": "06.json",
+      "count": 1000,
+      "yearStart": 1995,
+      "yearEnd": 1998
+    },
+    {
+      "file": "07.json",
+      "count": 1000,
+      "yearStart": 1998,
+      "yearEnd": 2000
+    },
+    {
+      "file": "08.json",
+      "count": 1000,
+      "yearStart": 2000,
+      "yearEnd": 2002
+    },
+    {
+      "file": "09.json",
+      "count": 1000,
+      "yearStart": 2002,
+      "yearEnd": 2004
+    },
+    {
+      "file": "10.json",
+      "count": 1000,
+      "yearStart": 2004,
+      "yearEnd": 2005
+    },
+    {
+      "file": "11.json",
+      "count": 1000,
+      "yearStart": 2005,
+      "yearEnd": 2007
+    },
+    {
+      "file": "12.json",
+      "count": 1000,
+      "yearStart": 2007,
+      "yearEnd": 2008
+    },
+    {
+      "file": "13.json",
+      "count": 1000,
+      "yearStart": 2008,
+      "yearEnd": 2009
+    },
+    {
+      "file": "14.json",
+      "count": 1000,
+      "yearStart": 2009,
+      "yearEnd": 2010
+    },
+    {
+      "file": "15.json",
+      "count": 1000,
+      "yearStart": 2010,
+      "yearEnd": 2012
+    },
+    {
+      "file": "16.json",
+      "count": 1000,
+      "yearStart": 2012,
+      "yearEnd": 2013
+    },
+    {
+      "file": "17.json",
+      "count": 1000,
+      "yearStart": 2013,
+      "yearEnd": 2014
+    },
+    {
+      "file": "18.json",
+      "count": 1000,
+      "yearStart": 2014,
+      "yearEnd": 2015
+    },
+    {
+      "file": "19.json",
+      "count": 1000,
+      "yearStart": 2015,
+      "yearEnd": 2017
+    },
+    {
+      "file": "20.json",
+      "count": 1000,
+      "yearStart": 2017,
+      "yearEnd": 2018
+    },
+    {
+      "file": "21.json",
+      "count": 1000,
+      "yearStart": 2018,
+      "yearEnd": 2019
+    },
+    {
+      "file": "22.json",
+      "count": 1000,
+      "yearStart": 2019,
+      "yearEnd": 2020
+    },
+    {
+      "file": "23.json",
+      "count": 1000,
+      "yearStart": 2020,
+      "yearEnd": 2022
+    },
+    {
+      "file": "24.json",
+      "count": 1000,
+      "yearStart": 2022,
+      "yearEnd": 2024
+    },
+    {
+      "file": "25.json",
+      "count": 537,
+      "yearStart": 2024,
+      "yearEnd": 2025
+    }
+  ],
+  "translatedCount": 23419
+}
