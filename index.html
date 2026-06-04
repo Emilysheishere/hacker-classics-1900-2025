@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hacker Classics 1900-2025</title>
+    <link rel="stylesheet" href="styles.css?v=5" />
+  </head>
+  <body>
+    <header class="hero">
+      <div class="hero__eyebrow">Hacker News time archive</div>
+      <h1>Hacker Classics<br /><span>1900-2025</span></h1>
+      <p>
+        收集 Hacker News 标题末尾带年份标记的提交，例如
+        <code>(1990)</code> 或 <code>(1990) [pdf]</code>，最低分数
+        <code>points >= 4</code>。像翻旧报纸一样，从 1900 年一路读到 2025 年。
+      </p>
+    </header>
+
+    <main class="shell" id="top">
+      <section class="controls" aria-label="Archive controls">
+        <div class="stat-card">
+          <span class="stat-card__label">Total stories</span>
+          <strong id="totalStories">...</strong>
+        </div>
+        <form id="searchForm" class="search-form">
+          <label for="searchInput">搜索标题 / 内容</label>
+          <div>
+            <input id="searchInput" name="q" type="search" placeholder="Lisp、泰坦尼克、AI、Paul Graham..." autocomplete="off" />
+            <button type="submit">Search</button>
+          </div>
+          <p id="searchHint">输入关键词后会搜索全库标题、中文标题、URL/域名、年份和 HN 文本字段。</p>
+        </form>
+        <form id="yearForm" class="jump-form">
+          <label for="yearInput">跳转年份</label>
+          <div>
+            <input id="yearInput" name="year" type="number" inputmode="numeric" min="1900" max="2025" placeholder="1990" />
+            <button type="submit">Go</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="recommendations" aria-label="年度最佳 Top 5">
+        <div class="recommendations__head">
+          <div>
+            <span class="recommendations__eyebrow">Reading route</span>
+            <h2>年度最佳 TOP 5</h2>
+          </div>
+          <p id="recommendationScope">按当前年份推荐最高分的 5 篇。</p>
+        </div>
+        <div id="topRecommendations" class="top-list"></div>
+      </section>
+
+      <nav class="pager" aria-label="Pagination">
+        <a id="firstPage" href="#page=1">首页</a>
+        <a id="prevPage" href="#page=1">上一页</a>
+        <span id="pageStatus">Loading...</span>
+        <a id="nextPage" href="#page=1">下��页</a>
+        <a id="lastPage" href="#page=1">末页</a>
+      </nav>
+
+      <section class="archive" aria-live="polite">
+        <div id="loading" class="loading">正在打开档案柜...</div>
+        <div id="error" class="error" hidden></div>
+        <div id="storyList"></div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      数据由 <a href="https://hn.algolia.com/api" target="_blank" rel="noreferrer">Algolia HN Search API</a>
+      抓取。灵感来自
+      <a href="https://github.com/jsomers/hacker-classics" target="_blank" rel="noreferrer">jsomers/hacker-classics</a>。
+    </footer>
+
+    <button id="backToTop" class="back-to-top" type="button" aria-label="回到顶部搜索区" title="回到顶部搜索区">↑</button>
+
+    <script src="app.js?v=5"></script>
+  </body>
+</html>

@@ -1,0 +1,455 @@
+:root {
+  --paper: #f8f3e7;
+  --paper-deep: #efe1c5;
+  --ink: #1b1a17;
+  --muted: #746b5b;
+  --line: #d7c5a3;
+  --green: #0f8f51;
+  --green-dark: #0b6038;
+  --amber: #d89a1d;
+  --shadow: 0 18px 50px rgba(62, 43, 17, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 12% 8%, rgba(216, 154, 29, 0.18), transparent 28rem),
+    radial-gradient(circle at 88% 12%, rgba(15, 143, 81, 0.13), transparent 26rem),
+    linear-gradient(135deg, #fcf8ef 0%, var(--paper) 42%, #f1dfbd 100%);
+  font-family: "Iowan Old Style", Charter, "Songti SC", "Noto Serif SC", Georgia, serif;
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+}
+
+.hero {
+  width: min(1120px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 64px 0 30px;
+}
+
+.hero__eyebrow {
+  width: fit-content;
+  color: #fffaf0;
+  background: var(--green-dark);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font: 700 12px/1.2 "Avenir Next", "Gill Sans", sans-serif;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  margin: 16px 0 12px;
+  font-size: clamp(48px, 8vw, 104px);
+  line-height: 0.88;
+  letter-spacing: -0.07em;
+}
+
+.hero h1 span {
+  color: var(--green);
+}
+
+.hero p {
+  max-width: 760px;
+  color: #3d352a;
+  font-size: clamp(17px, 2vw, 21px);
+  line-height: 1.75;
+  margin: 0;
+}
+
+code {
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(116, 107, 91, 0.18);
+  border-radius: 6px;
+  padding: 1px 5px;
+}
+
+.shell {
+  width: min(1120px, calc(100% - 32px));
+  margin: 0 auto 56px;
+  background: rgba(255, 252, 244, 0.82);
+  border: 1px solid rgba(116, 107, 91, 0.18);
+  border-radius: 28px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: minmax(130px, 0.7fr) minmax(320px, 1.8fr) minmax(260px, 1fr);
+  gap: 12px;
+  padding: 18px;
+  border-bottom: 1px solid var(--line);
+  background:
+    linear-gradient(90deg, rgba(15, 143, 81, 0.1), transparent),
+    rgba(255, 248, 235, 0.76);
+}
+
+.stat-card,
+.jump-form,
+.search-form {
+  background: rgba(255, 255, 255, 0.58);
+  border: 1px solid rgba(116, 107, 91, 0.16);
+  border-radius: 18px;
+  padding: 14px 16px;
+}
+
+.stat-card__label,
+.jump-form label,
+.search-form label,
+.story__meta {
+  color: var(--muted);
+  font: 700 12px/1.3 "Avenir Next", "Gill Sans", sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.stat-card strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 28px;
+  line-height: 1;
+}
+
+.jump-form div,
+.search-form div {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.jump-form input,
+.search-form input {
+  min-width: 0;
+  flex: 1;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: var(--ink);
+  background: #fffaf1;
+  font: 700 16px/1 "Avenir Next", "Gill Sans", sans-serif;
+}
+
+.jump-form button,
+.search-form button,
+.pager a {
+  border: 0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  color: white;
+  background: var(--green-dark);
+  font: 800 13px/1 "Avenir Next", "Gill Sans", sans-serif;
+  text-decoration: none;
+}
+
+.jump-form button:hover,
+.search-form button:hover,
+.pager a:hover {
+  background: var(--green);
+}
+
+#searchHint {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.recommendations {
+  padding: 18px;
+  border-bottom: 1px solid var(--line);
+  background:
+    linear-gradient(135deg, rgba(216, 154, 29, 0.16), transparent 55%),
+    rgba(250, 241, 220, 0.72);
+}
+
+.recommendations__head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.recommendations__eyebrow {
+  color: var(--green-dark);
+  font: 800 12px/1.2 "Avenir Next", "Gill Sans", sans-serif;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.recommendations h2 {
+  margin: 4px 0 0;
+  font-size: 28px;
+  line-height: 1;
+}
+
+.recommendations p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.top-list {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.top-card {
+  min-height: 138px;
+  padding: 12px;
+  border: 1px solid rgba(116, 107, 91, 0.16);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.top-card__rank {
+  color: var(--amber);
+  font: 900 18px/1 "Avenir Next", "Gill Sans", sans-serif;
+}
+
+.top-card a {
+  display: block;
+  margin-top: 8px;
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.3;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.top-card__en,
+.story__title-en {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.top-card__meta {
+  margin-top: 8px;
+  color: var(--green-dark);
+  font: 800 12px/1.35 "Avenir Next", "Gill Sans", sans-serif;
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.pager a[aria-disabled="true"] {
+  color: #8f877b;
+  background: #ded2bd;
+  pointer-events: none;
+}
+
+#pageStatus {
+  min-width: 150px;
+  color: var(--muted);
+  text-align: center;
+  font: 700 13px/1.2 "Avenir Next", "Gill Sans", sans-serif;
+}
+
+.archive {
+  min-height: 420px;
+  padding: 8px 18px 24px;
+}
+
+.loading,
+.error {
+  padding: 40px 20px;
+  color: var(--muted);
+  text-align: center;
+  font-size: 18px;
+}
+
+.error {
+  color: #8a1f16;
+}
+
+.year-group {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 18px;
+  padding: 24px 0;
+  border-bottom: 1px solid rgba(215, 197, 163, 0.72);
+}
+
+.year-label {
+  position: sticky;
+  top: 12px;
+  align-self: start;
+  color: var(--green-dark);
+  font: 900 34px/1 "Avenir Next", "Gill Sans", sans-serif;
+  letter-spacing: -0.08em;
+}
+
+.story {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
+  gap: 12px;
+  padding: 13px 0;
+}
+
+.story + .story {
+  border-top: 1px dotted rgba(116, 107, 91, 0.28);
+}
+
+.story__rank {
+  color: var(--amber);
+  font: 900 20px/1 "Avenir Next", "Gill Sans", sans-serif;
+  text-align: right;
+  padding-top: 2px;
+}
+
+.story__title {
+  display: inline-block;
+  color: var(--ink);
+  font-size: 19px;
+  line-height: 1.35;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+
+.story__title-en {
+  margin-top: 2px;
+}
+
+.story__title:visited {
+  color: #6a6258;
+}
+
+.story__domain {
+  color: var(--muted);
+  font-size: 13px;
+  margin-left: 4px;
+  white-space: nowrap;
+}
+
+.story__meta {
+  margin-top: 5px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.story__meta a {
+  color: var(--green-dark);
+  text-decoration: none;
+}
+
+.story__meta a:hover {
+  text-decoration: underline;
+}
+
+.footer {
+  width: min(1120px, calc(100% - 32px));
+  margin: 0 auto 36px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.footer a {
+  color: var(--green-dark);
+}
+
+.back-to-top {
+  position: fixed;
+  right: max(18px, calc((100vw - 1120px) / 2 - 72px));
+  bottom: 32px;
+  z-index: 20;
+  width: 54px;
+  height: 54px;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: 999px;
+  color: #fffaf0;
+  background:
+    radial-gradient(circle at 35% 25%, rgba(255, 255, 255, 0.28), transparent 34%),
+    var(--green-dark);
+  box-shadow: 0 16px 34px rgba(13, 72, 43, 0.24);
+  cursor: pointer;
+  font: 900 28px/1 "Avenir Next", "Gill Sans", sans-serif;
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+  transition: opacity 180ms ease, transform 180ms ease, background 180ms ease;
+}
+
+.back-to-top.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.back-to-top:hover {
+  background:
+    radial-gradient(circle at 35% 25%, rgba(255, 255, 255, 0.3), transparent 34%),
+    var(--green);
+}
+
+@media (max-width: 760px) {
+  .hero {
+    padding-top: 40px;
+  }
+
+  .controls {
+    grid-template-columns: 1fr;
+  }
+
+  .recommendations__head {
+    display: block;
+  }
+
+  .recommendations p {
+    margin-top: 8px;
+  }
+
+  .top-list {
+    grid-template-columns: 1fr;
+  }
+
+  .back-to-top {
+    right: 14px;
+    bottom: 18px;
+    width: 48px;
+    height: 48px;
+    font-size: 25px;
+  }
+
+  .pager {
+    flex-wrap: wrap;
+  }
+
+  .year-group {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .year-label {
+    position: static;
+    font-size: 30px;
+  }
+
+  .story {
+    grid-template-columns: 38px minmax(0, 1fr);
+  }
+
+  .story__title {
+    font-size: 17px;
+  }
+}
