@@ -3,7 +3,6 @@ const state = {
   chunkCache: new Map(),
   allStories: null,
   searchResults: null,
-  visibleStories: [],
 };
 
 const els = {
@@ -24,19 +23,6 @@ const els = {
   topRecommendations: document.querySelector("#topRecommendations"),
   recommendationScope: document.querySelector("#recommendationScope"),
   backToTop: document.querySelector("#backToTop"),
-  pawLayer: document.querySelector("#pawLayer"),
-  shibaCompanion: document.querySelector("#shibaCompanion"),
-  shibaButton: document.querySelector("#shibaButton"),
-  shibaBubble: document.querySelector("#shibaBubble"),
-  shibaBubbleText: document.querySelector("#shibaBubbleText"),
-  shibaBubbleLink: document.querySelector("#shibaBubbleLink"),
-};
-
-const shibaState = {
-  lastPawAt: 0,
-  bubbleTimer: null,
-  isPointerFine: window.matchMedia("(hover: hover) and (pointer: fine)").matches,
-  lastRecommendedAt: 0,
 };
 
 function parseHash() {
@@ -142,7 +128,6 @@ function setDisabled(element, disabled) {
 }
 
 function renderStories(stories) {
-  state.visibleStories = stories;
   const grouped = new Map();
   for (const story of stories) {
     if (!grouped.has(story.year)) grouped.set(story.year, []);
@@ -180,91 +165,6 @@ function renderStories(stories) {
     html += "</div></section>";
   }
   els.storyList.innerHTML = html;
-}
-
-function setShibaBubble(text, story = null) {
-  if (!els.shibaBubble || !els.shibaBubbleText) return;
-  els.shibaBubbleText.textContent = text;
-  if (story && els.shibaBubbleLink) {
-    els.shibaBubbleLink.hidden = false;
-    els.shibaBubbleLink.href = storyUrl(story);
-  } else if (els.shibaBubbleLink) {
-    els.shibaBubbleLink.hidden = true;
-    els.shibaBubbleLink.removeAttribute("href");
-  }
-  els.shibaBubble.hidden = false;
-  window.clearTimeout(shibaState.bubbleTimer);
-  shibaState.bubbleTimer = window.setTimeout(() => {
-    els.shibaBubble.hidden = true;
-  }, story ? 7600 : 3600);
-}
-
-function leavePawPrint(x, y, force = false) {
-  if (!els.pawLayer || !shibaState.isPointerFine) return;
-  const now = Date.now();
-  if (!force && now - shibaState.lastPawAt < 520) return;
-  shibaState.lastPawAt = now;
-
-  const paw = document.createElement("span");
-  paw.className = "paw-print";
-  paw.style.left = `${x}px`;
-  paw.style.top = `${y}px`;
-  paw.style.setProperty("--paw-rotate", `${Math.round(Math.random() * 42 - 21)}deg`);
-  paw.style.setProperty("--paw-size", `${Math.round(24 + Math.random() * 18)}px`);
-  els.pawLayer.appendChild(paw);
-  paw.addEventListener("animationend", () => paw.remove(), { once: true });
-}
-
-function updateShibaPosition(event) {
-  if (!els.shibaCompanion || !shibaState.isPointerFine) return;
-  const currentRect = els.shibaButton?.getBoundingClientRect();
-  if (currentRect) {
-    const centerX = currentRect.left + currentRect.width / 2;
-    const centerY = currentRect.top + currentRect.height / 2;
-    const distance = Math.hypot(event.clientX - centerX, event.clientY - centerY);
-    if (distance < 150) {
-      leavePawPrint(event.clientX, event.clientY);
-      return;
-    }
-  }
-  const xRatio = (event.clientX / window.innerWidth - 0.5) * 2;
-  const yRatio = (event.clientY / window.innerHeight - 0.5) * 2;
-  const companionWidth = 118;
-  const companionHeight = 118;
-  const offsetX = event.clientX < window.innerWidth - 220 ? 58 : -150;
-  const offsetY = event.clientY < window.innerHeight - 190 ? 40 : -142;
-  const left = Math.max(12, Math.min(window.innerWidth - companionWidth - 12, event.clientX + offsetX));
-  const top = Math.max(12, Math.min(window.innerHeight - companionHeight - 12, event.clientY + offsetY));
-  els.shibaCompanion.style.setProperty("--shiba-left", `${Math.round(left)}px`);
-  els.shibaCompanion.style.setProperty("--shiba-top", `${Math.round(top)}px`);
-  els.shibaCompanion.style.setProperty("--shiba-x", `${Math.round(xRatio * 4)}px`);
-  els.shibaCompanion.style.setProperty("--shiba-y", `${Math.round(yRatio * 3)}px`);
-  els.shibaCompanion.style.setProperty("--shiba-tilt", `${(xRatio * -5).toFixed(1)}deg`);
-  leavePawPrint(event.clientX, event.clientY);
-}
-
-function recommendFromShiba() {
-  const now = Date.now();
-  if (now - shibaState.lastRecommendedAt < 900 && !els.shibaBubble?.hidden) return;
-  shibaState.lastRecommendedAt = now;
-  const pool = state.visibleStories.length ? state.visibleStories : (state.allStories || []);
-  if (!pool.length) {
-    setShibaBubble("档案还没打开，等我闻一闻数据味道。");
-    return;
-  }
-  const shortlist = [...pool]
-    .sort((a, b) => Number(b.points || 0) - Number(a.points || 0))
-    .slice(0, Math.min(40, pool.length));
-  const story = shortlist[Math.floor(Math.random() * shortlist.length)];
-  const title = story.title_zh || story.title;
-  setShibaBubble(`你的小可爱叼来一篇：${title}`, story);
-}
-
-function hideShibaBubbleSoon() {
-  window.clearTimeout(shibaState.bubbleTimer);
-  shibaState.bubbleTimer = window.setTimeout(() => {
-    if (els.shibaBubble) els.shibaBubble.hidden = true;
-  }, 900);
 }
 
 function renderTopRecommendations(stories, label) {
@@ -413,29 +313,6 @@ els.searchForm.addEventListener("submit", (event) => {
 els.backToTop.addEventListener("click", () => {
   document.querySelector("#top").scrollIntoView({ behavior: "auto", block: "start" });
   els.searchInput.focus({ preventScroll: true });
-});
-
-window.addEventListener("pointermove", updateShibaPosition, { passive: true });
-window.addEventListener("pointerdown", (event) => {
-  leavePawPrint(event.clientX, event.clientY, true);
-}, { passive: true });
-
-els.shibaButton?.addEventListener("pointerenter", (event) => {
-  const rect = els.shibaButton.getBoundingClientRect();
-  leavePawPrint(rect.left + rect.width * 0.42, rect.top + rect.height * 0.72, true);
-  recommendFromShiba();
-});
-
-els.shibaButton?.addEventListener("pointerleave", hideShibaBubbleSoon);
-els.shibaBubble?.addEventListener("pointerenter", () => {
-  window.clearTimeout(shibaState.bubbleTimer);
-});
-els.shibaBubble?.addEventListener("pointerleave", hideShibaBubbleSoon);
-els.shibaButton?.addEventListener("focus", recommendFromShiba);
-els.shibaButton?.addEventListener("blur", hideShibaBubbleSoon);
-els.shibaButton?.addEventListener("click", (event) => {
-  event.preventDefault();
-  event.currentTarget.blur();
 });
 
 window.addEventListener("scroll", () => {
