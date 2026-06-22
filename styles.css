@@ -402,126 +402,6 @@ code {
     var(--green);
 }
 
-.paw-layer {
-  position: fixed;
-  inset: 0;
-  z-index: 18;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.paw-print {
-  position: absolute;
-  width: var(--paw-size, 34px);
-  height: var(--paw-size, 34px);
-  background: url("assets/shiba-paw.png") center / contain no-repeat;
-  opacity: 0;
-  transform: translate(-50%, -50%) rotate(var(--paw-rotate, -10deg)) scale(0.58);
-  animation: paw-fade 1.8s ease-out forwards;
-  filter: drop-shadow(0 8px 10px rgba(62, 43, 17, 0.12));
-}
-
-@keyframes paw-fade {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, -50%) rotate(var(--paw-rotate, -10deg)) scale(0.45);
-  }
-
-  18% {
-    opacity: 0.44;
-    transform: translate(-50%, -50%) rotate(var(--paw-rotate, -10deg)) scale(0.76);
-  }
-
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -68%) rotate(var(--paw-rotate, -10deg)) scale(1);
-  }
-}
-
-.shiba-companion {
-  position: fixed;
-  left: var(--shiba-left, auto);
-  top: var(--shiba-top, auto);
-  right: max(18px, calc((100vw - 1120px) / 2 - 62px));
-  bottom: 98px;
-  z-index: 19;
-  width: 118px;
-  pointer-events: none;
-  transform: translate3d(var(--shiba-x, 0), var(--shiba-y, 0), 0) rotate(var(--shiba-tilt, 0deg));
-  transform-origin: 50% 90%;
-  transition:
-    left 320ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    top 320ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.shiba-companion__button {
-  display: block;
-  width: 94px;
-  height: 104px;
-  margin-left: auto;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-  pointer-events: auto;
-  filter: drop-shadow(0 18px 24px rgba(62, 43, 17, 0.2));
-  transform: translateZ(0);
-  transition: transform 180ms ease, filter 180ms ease;
-}
-
-.shiba-companion__button:hover {
-  transform: translateY(-4px) rotate(-3deg);
-  filter: drop-shadow(0 22px 26px rgba(62, 43, 17, 0.24));
-}
-
-.shiba-companion__button:active {
-  transform: translateY(0) scale(0.96);
-}
-
-.shiba-companion__button img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.shiba-companion__bubble {
-  position: absolute;
-  right: 80px;
-  bottom: 82px;
-  width: min(260px, calc(100vw - 132px));
-  padding: 11px 12px;
-  border: 1px solid rgba(116, 107, 91, 0.18);
-  border-radius: 16px 16px 4px 16px;
-  color: #2e261d;
-  background: rgba(255, 252, 244, 0.94);
-  box-shadow: 0 16px 36px rgba(62, 43, 17, 0.15);
-  font: 700 13px/1.45 "Avenir Next", "Gill Sans", "Songti SC", sans-serif;
-  pointer-events: auto;
-}
-
-.shiba-companion__bubble::after {
-  content: "";
-  position: absolute;
-  right: -8px;
-  bottom: 14px;
-  width: 16px;
-  height: 16px;
-  border-right: 1px solid rgba(116, 107, 91, 0.18);
-  border-bottom: 1px solid rgba(116, 107, 91, 0.18);
-  background: rgba(255, 252, 244, 0.94);
-  transform: rotate(-45deg);
-}
-
-.shiba-companion__bubble a {
-  display: inline-block;
-  margin-left: 6px;
-  color: var(--green-dark);
-  text-decoration-thickness: 1px;
-  text-underline-offset: 3px;
-}
-
 @media (max-width: 760px) {
   .hero {
     padding-top: 40px;
@@ -551,26 +431,6 @@ code {
     font-size: 25px;
   }
 
-  .shiba-companion {
-    left: auto;
-    top: auto;
-    right: 10px;
-    bottom: 76px;
-    width: 86px;
-  }
-
-  .shiba-companion__button {
-    width: 72px;
-    height: 80px;
-  }
-
-  .shiba-companion__bubble {
-    right: 60px;
-    bottom: 60px;
-    width: min(220px, calc(100vw - 102px));
-    font-size: 12px;
-  }
-
   .pager {
     flex-wrap: wrap;
   }
@@ -591,22 +451,5 @@ code {
 
   .story__title {
     font-size: 17px;
-  }
-}
-
-@media (hover: none), (pointer: coarse) {
-  .paw-print {
-    display: none;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .paw-print {
-    display: none;
-  }
-
-  .shiba-companion,
-  .shiba-companion__button {
-    transition: none;
   }
 }
