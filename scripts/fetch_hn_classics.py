@@ -10,11 +10,12 @@ without pulling one very large file.
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
 import re
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
@@ -23,12 +24,14 @@ from urllib.request import Request, urlopen
 
 
 ALGOLIA_URL = "https://hn.algolia.com/api/v1/search"
+ALGOLIA_BY_DATE_URL = "https://hn.algolia.com/api/v1/search_by_date"
 DEFAULT_START_YEAR = 1900
 DEFAULT_END_YEAR = 2025
 DEFAULT_MIN_POINTS = 4
-DEFAULT_HITS_PER_PAGE = 100
+DEFAULT_HITS_PER_PAGE = 1000
 DEFAULT_PAGE_SIZE = 1000
 DEFAULT_REQUEST_DELAY = 0.15
+DEFAULT_CREATED_AFTER = "2006-10-09"
 MAX_RETRIES = 4
 
 
@@ -41,6 +44,37 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--min-points", type=int, default=DEFAULT_MIN_POINTS)
     parser.add_argument("--hits-per-page", type=int, default=DEFAULT_HITS_PER_PAGE)
     parser.add_argument("--page-size", type=int, default=DEFAULT_PAGE_SIZE)
+    parser.add_argument(
+        "--strategy",
+        choices=("time-slice", "year-query"),
+        default="time-slice",
+        help=(
+            "time-slice is exhaustive: walk HN submission dates and filter locally. "
+            "year-query is faster but can miss Algolia results due to search pagination."
+        ),
+    )
+    parser.add_argument(
+        "--created-after",
+        default=DEFAULT_CREATED_AFTER,
+        help="UTC date for time-slice scan start, YYYY-MM-DD.",
+    )
+    parser.add_argument(
+        "--created-before",
+        default=None,
+        help="UTC date for time-slice scan end, YYYY-MM-DD. Defaults to tomorrow UTC.",
+    )
+    parser.add_argument(
+        "--slice-days",
+        type=int,
+        default=1,
+        help="Initial time-slice window size in days. Overloaded windows are split recursively.",
+    )
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=8,
+        help="Concurrent workers for time-slice scans.",
+    )
     parser.add_argument(
         "--out-dir",
         type=Path,
@@ -72,6 +106,16 @@ def title_year_pattern(year: int) -> re.Pattern[str]:
     return re.compile(rf"\({year}\)(?:\s*(?:\[[^\]]+\]|\([^\)]*\)))?\s*$")
 
 
+def any_title_year_pattern(start_year: int, end_year: int) -> re.Pattern[str]:
+    return re.compile(
+        rf"\((?P<year>\d{{4}})\)(?:\s*(?:\[[^\]]+\]|\([^\)]*\)))?\s*$"
+    )
+
+
+def parse_utc_date(value: str) -> datetime:
+    return datetime.strptime(value, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+
+
 def algolia_search(year: int, page: int, hits_per_page: int) -> dict[str, Any]:
     params = urlencode(
         {
@@ -97,8 +141,39 @@ def algolia_search(year: int, page: int, hits_per_page: int) -> dict[str, Any]:
     raise RuntimeError(f"Failed to fetch {url}")
 
 
+def algolia_search_by_date(
+    start_ts: int,
+    end_ts: int,
+    min_points: int,
+    page: int,
+    hits_per_page: int,
+) -> dict[str, Any]:
+    params = urlencode(
+        {
+            "tags": "story",
+            "query": "",
+            "numericFilters": f"points>={min_points},created_at_i>={start_ts},created_at_i<{end_ts}",
+            "page": page,
+            "hitsPerPage": hits_per_page,
+        }
+    )
+    url = f"{ALGOLIA_BY_DATE_URL}?{params}"
+    request = Request(url, headers={"User-Agent": "hn-classics-fetcher/2.0"})
+
+    for attempt in range(MAX_RETRIES):
+        try:
+            with urlopen(request, timeout=30) as response:
+                return json.loads(response.read().decode("utf-8"))
+        except (HTTPError, URLError, TimeoutError) as exc:
+            if attempt == MAX_RETRIES - 1:
+                raise RuntimeError(f"Failed to fetch {url}: {exc}") from exc
+            time.sleep(1.5 * (attempt + 1))
+
+    raise RuntimeError(f"Failed to fetch {url}")
+
+
 def compact_story(hit: dict[str, Any], year: int) -> dict[str, Any]:
-    return {
+    story = {
         "year": year,
         "title": hit.get("title") or hit.get("story_title") or "",
         "url": hit.get("url") or hit.get("story_url"),
@@ -108,6 +183,11 @@ def compact_story(hit: dict[str, Any], year: int) -> dict[str, Any]:
         "objectID": hit.get("objectID"),
         "num_comments": hit.get("num_comments") or 0,
     }
+    if hit.get("story_text"):
+        story["story_text"] = hit["story_text"]
+    if hit.get("comment_text"):
+        story["comment_text"] = hit["comment_text"]
+    return story
 
 
 def fetch_year(
@@ -140,6 +220,130 @@ def fetch_year(
         if max_pages_per_year is not None and page >= max_pages_per_year:
             break
         time.sleep(request_delay)
+
+    return stories
+
+
+def fetch_time_range(
+    start_dt: datetime,
+    end_dt: datetime,
+    start_year: int,
+    end_year: int,
+    min_points: int,
+    hits_per_page: int,
+    request_delay: float,
+) -> list[dict[str, Any]]:
+    pattern = any_title_year_pattern(start_year, end_year)
+    stories: list[dict[str, Any]] = []
+    start_ts = int(start_dt.timestamp())
+    end_ts = int(end_dt.timestamp())
+    first_page = algolia_search_by_date(start_ts, end_ts, min_points, 0, hits_per_page)
+    nb_hits = int(first_page.get("nbHits") or 0)
+
+    if nb_hits > hits_per_page:
+        midpoint = start_dt + (end_dt - start_dt) / 2
+        if int(midpoint.timestamp()) in (start_ts, end_ts):
+            raise RuntimeError(f"Cannot split overloaded range {start_dt} to {end_dt}")
+        stories.extend(
+            fetch_time_range(
+                start_dt,
+                midpoint,
+                start_year,
+                end_year,
+                min_points,
+                hits_per_page,
+                request_delay,
+            )
+        )
+        stories.extend(
+            fetch_time_range(
+                midpoint,
+                end_dt,
+                start_year,
+                end_year,
+                min_points,
+                hits_per_page,
+                request_delay,
+            )
+        )
+        return stories
+
+    pages = [first_page]
+    for page in range(1, int(first_page.get("nbPages") or 0)):
+        time.sleep(request_delay)
+        pages.append(algolia_search_by_date(start_ts, end_ts, min_points, page, hits_per_page))
+
+    for data in pages:
+        for hit in data.get("hits", []):
+            title = hit.get("title") or hit.get("story_title") or ""
+            match = pattern.search(title)
+            if not match:
+                continue
+            year = int(match.group("year"))
+            if start_year <= year <= end_year:
+                stories.append(compact_story(hit, year))
+
+    return stories
+
+
+def fetch_by_time_slices(
+    created_after: str,
+    created_before: str | None,
+    start_year: int,
+    end_year: int,
+    min_points: int,
+    hits_per_page: int,
+    request_delay: float,
+    slice_days: int,
+    workers: int,
+) -> list[dict[str, Any]]:
+    current = parse_utc_date(created_after)
+    stop = parse_utc_date(created_before) if created_before else (
+        datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+        + timedelta(days=1)
+    )
+    if slice_days < 1:
+        raise ValueError("--slice-days must be >= 1")
+    if workers < 1:
+        raise ValueError("--workers must be >= 1")
+
+    ranges: list[tuple[datetime, datetime]] = []
+    while current < stop:
+        next_slice = min(current + timedelta(days=slice_days), stop)
+        ranges.append((current, next_slice))
+        current = next_slice
+
+    stories: list[dict[str, Any]] = []
+    completed = 0
+
+    def fetch_range(date_range: tuple[datetime, datetime]) -> tuple[datetime, datetime, list[dict[str, Any]]]:
+        range_start, range_end = date_range
+        return (
+            range_start,
+            range_end,
+            fetch_time_range(
+                range_start,
+                range_end,
+                start_year,
+                end_year,
+                min_points,
+                hits_per_page,
+                request_delay,
+            ),
+        )
+
+    with ThreadPoolExecutor(max_workers=workers) as executor:
+        future_to_range = {executor.submit(fetch_range, date_range): date_range for date_range in ranges}
+        for future in as_completed(future_to_range):
+            range_start, range_end, slice_stories = future.result()
+            completed += 1
+            stories.extend(slice_stories)
+            if slice_stories or completed % 100 == 0:
+                print(
+                    f"{completed}/{len(ranges)} {range_start.date()}..{range_end.date()}: "
+                    f"{len(slice_stories)} matching stories",
+                    flush=True,
+                )
 
     return stories
 
@@ -213,16 +417,29 @@ def main() -> int:
         return 2
 
     all_stories: list[dict[str, Any]] = []
-    for year in range(args.start_year, args.end_year + 1):
-        stories = fetch_year(
-            year=year,
+    if args.strategy == "time-slice":
+        all_stories = fetch_by_time_slices(
+            created_after=args.created_after,
+            created_before=args.created_before,
+            start_year=args.start_year,
+            end_year=args.end_year,
             min_points=args.min_points,
             hits_per_page=args.hits_per_page,
             request_delay=args.request_delay,
-            max_pages_per_year=args.max_pages_per_year,
+            slice_days=args.slice_days,
+            workers=args.workers,
         )
-        all_stories.extend(stories)
-        print(f"{year}: {len(stories)} stories", flush=True)
+    else:
+        for year in range(args.start_year, args.end_year + 1):
+            stories = fetch_year(
+                year=year,
+                min_points=args.min_points,
+                hits_per_page=args.hits_per_page,
+                request_delay=args.request_delay,
+                max_pages_per_year=args.max_pages_per_year,
+            )
+            all_stories.extend(stories)
+            print(f"{year}: {len(stories)} stories", flush=True)
 
     stories = dedupe_and_sort(all_stories)
     print(f"Total after dedupe: {len(stories)}", flush=True)

@@ -236,7 +236,7 @@ async function renderRoute() {
     try {
       const results = await runSearch(q);
       renderStories(results);
-      renderTopRecommendations(results, `搜索 "${q}" 的最高分 5 篇。`);
+      renderTopRecommendations(results, `搜索 “${q}” 的最高分 5 篇。`);
       els.searchHint.textContent = `找到 ${results.length.toLocaleString()} 条结果。搜索覆盖标题、中文标题、URL/域名、年份和 HN 文本字段。`;
       els.loading.hidden = true;
       window.scrollTo({ top: 0, behavior: "instant" });
