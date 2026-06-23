@@ -3,6 +3,7 @@ const state = {
   chunkCache: new Map(),
   allStories: null,
   searchResults: null,
+  visibleStories: [],
 };
 
 const els = {
@@ -23,6 +24,17 @@ const els = {
   topRecommendations: document.querySelector("#topRecommendations"),
   recommendationScope: document.querySelector("#recommendationScope"),
   backToTop: document.querySelector("#backToTop"),
+  shibaCompanion: document.querySelector("#shibaCompanion"),
+  shibaButton: document.querySelector("#shibaButton"),
+  shibaBubble: document.querySelector("#shibaBubble"),
+  shibaBubbleText: document.querySelector("#shibaBubbleText"),
+  shibaBubbleLink: document.querySelector("#shibaBubbleLink"),
+};
+
+const shibaState = {
+  bubbleTimer: null,
+  autoTimer: null,
+  autoRecommended: false,
 };
 
 function parseHash() {
@@ -128,6 +140,7 @@ function setDisabled(element, disabled) {
 }
 
 function renderStories(stories) {
+  state.visibleStories = stories;
   const grouped = new Map();
   for (const story of stories) {
     if (!grouped.has(story.year)) grouped.set(story.year, []);
@@ -165,6 +178,42 @@ function renderStories(stories) {
     html += "</div></section>";
   }
   els.storyList.innerHTML = html;
+}
+
+function setShibaBubble(text, story = null) {
+  if (!els.shibaBubble || !els.shibaBubbleText) return;
+  els.shibaBubbleText.textContent = text;
+  if (story && els.shibaBubbleLink) {
+    els.shibaBubbleLink.hidden = false;
+    els.shibaBubbleLink.href = storyUrl(story);
+  } else if (els.shibaBubbleLink) {
+    els.shibaBubbleLink.hidden = true;
+    els.shibaBubbleLink.removeAttribute("href");
+  }
+  els.shibaBubble.hidden = false;
+  window.clearTimeout(shibaState.bubbleTimer);
+}
+
+function recommendFromShiba() {
+  const pool = state.visibleStories.length ? state.visibleStories : (state.allStories || []);
+  if (!pool.length) {
+    setShibaBubble("档案还没打开，等我闻一闻数据味道。");
+    return;
+  }
+  const shortlist = [...pool]
+    .sort((a, b) => Number(b.points || 0) - Number(a.points || 0))
+    .slice(0, Math.min(40, pool.length));
+  const story = shortlist[Math.floor(Math.random() * shortlist.length)];
+  const title = story.title_zh || story.title;
+  setShibaBubble(`你的小可爱叼来一篇：${title}`, story);
+}
+
+function scheduleShibaAutoRecommendation() {
+  if (shibaState.autoTimer || shibaState.autoRecommended) return;
+  shibaState.autoTimer = window.setTimeout(() => {
+    shibaState.autoRecommended = true;
+    recommendFromShiba();
+  }, 30000);
 }
 
 function renderTopRecommendations(stories, label) {
@@ -284,6 +333,7 @@ async function init() {
     els.yearInput.max = state.manifest.endYear;
     els.yearInput.placeholder = `${state.manifest.startYear}-${state.manifest.endYear}`;
     await renderRoute();
+    scheduleShibaAutoRecommendation();
   } catch (error) {
     els.loading.hidden = true;
     els.error.hidden = false;
@@ -313,6 +363,11 @@ els.searchForm.addEventListener("submit", (event) => {
 els.backToTop.addEventListener("click", () => {
   document.querySelector("#top").scrollIntoView({ behavior: "auto", block: "start" });
   els.searchInput.focus({ preventScroll: true });
+});
+
+els.shibaButton?.addEventListener("click", (event) => {
+  event.preventDefault();
+  recommendFromShiba();
 });
 
 window.addEventListener("scroll", () => {
